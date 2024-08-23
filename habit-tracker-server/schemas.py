@@ -12,6 +12,11 @@ class UserSchema(BaseSchema):
     password: str
     image: Optional[str] = None
 
+class UpdateUserSchema(BaseSchema):
+    username: Optional[str] = None
+    password: Optional[str] = None
+    image: Optional[str] = None
+
 class AuthSchema(BaseSchema):
     email: EmailStr
     authType: str
