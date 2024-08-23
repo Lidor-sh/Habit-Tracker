@@ -41,8 +41,14 @@
 }
 
 .SignIn{
-    padding-right: 1rem;
+    margin-right: 1rem;
     margin-left: 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    border-radius: 50rem;
+    background-color: #deac80;
 }
 
 .NavItem:hover {
@@ -52,4 +58,9 @@
     padding-right: 0.5rem; */
     border-radius: 2px;
     box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15), 0 2px 2px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.15), 0 8px 8px rgba(0, 0, 0, 0.15);
+}
+
+.Signin-container {
+    color: inherit;
+    text-decoration: none;
 }

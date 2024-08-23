@@ -1,20 +1,20 @@
 // import { useState } from 'react'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
-import './App.css'
-import Wave from './components/background/Wave'
-import Navigation from './components/navigation/Navigation'
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Signup from "./containers/signup/LoginPage";
+import HomePage from "./containers/homepage/Homepage";
 
 function App() {
-
   return (
-    <>
-      <Navigation />
-      <Wave/>
-      <p>Lidor and Eyal's Habit Tracker Website! Enjoy</p>
-      <Wave />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/Signup" element={<Signup />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default App
+export default App;

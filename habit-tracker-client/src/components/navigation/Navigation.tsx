@@ -1,6 +1,7 @@
 import { navItems } from "../../constants/navigationConstants";
 import "./Navigation.css";
 import logo from "../../assets/logo.png";
+import { Link } from "react-router-dom";
 
 export default function Navigation() {
   return (
@@ -19,7 +20,9 @@ export default function Navigation() {
             );
           })}
         </div>
-        <div className="SignIn">Lets Start</div>
+        <Link to={"/signup"} className="Signin-container">
+          <div className="SignIn">Let's Start</div>
+        </Link>
       </div>
     </>
   );
