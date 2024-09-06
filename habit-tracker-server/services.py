@@ -2,11 +2,14 @@ import database as db
 import models
 import schemas
 from typing import TYPE_CHECKING
+from passlib.context import CryptContext
 from pydantic import ValidationError
 from fastapi import HTTPException, status
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
+
+pwd_context = CryptContext()
 
 def add_tables():
     return db.Base.metadata.create_all(bind=db.engine)
