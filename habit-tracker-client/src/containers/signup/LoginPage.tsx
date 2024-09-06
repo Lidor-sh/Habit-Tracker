@@ -5,10 +5,10 @@ import SignUp from "../../components/signInSignUP/signUp/SignUp";
 export default function LoginPage() {
   return (
     <>
+      <Link to={"/"}>Return Home</Link>
       <div className="LoginOutline">
-        <Link to={"/"}>Return Home</Link>
         <div className="LoginContainer">
-          <SignIn />
+          <SignIn/>
           <SignUp />
         </div>
       </div>
