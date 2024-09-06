@@ -4,7 +4,7 @@ import schemas
 import sqlalchemy.orm as orm
 import services
 
-app = FastAPI()
+app = FastAPI() 
 
 @app.post("/api/users/", response_model=schemas.UserSchema)
 async def create_user(user: schemas.UserSchema, db: orm.Session = Depends(services.get_db)):
