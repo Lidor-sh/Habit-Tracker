@@ -4,12 +4,23 @@ import schemas
 from typing import TYPE_CHECKING
 from passlib.context import CryptContext
 from pydantic import ValidationError
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends, FastAPI
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from dotenv import load_dotenv
+from datetime import timedelta, timezone, datetime
+from jwt.exceptions import InvalidTokenError
+import jwt
+import os
+from typing import Annotated
+
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
-pwd_context = CryptContext()
+load_dotenv(".env")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def add_tables():
     return db.Base.metadata.create_all(bind=db.engine)
@@ -29,7 +40,8 @@ async def create_user(user: schemas.UserSchema, db: "Session") -> schemas.UserSc
             detail="User with this email already exists"
         )
     
-    user = models.User(**user.dict())
+    hashed_password = pwd_context.hash(user.password)
+    user = models.User(email=user.email, password=hashed_password, username=user.username, image=user.image)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -72,3 +84,40 @@ async def delete_user(email: str, db: "Session"):
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
+
+async def authenticate_user(email: str, password: str, db: "Session"):
+    user = db.query(models.User).filter_by(email=email).first()
+    if not user:
+        return False
+    if not pwd_context.verify(password, user.password):
+        return False
+    return user
+
+async def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now(timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM"))
+    return encoded_jwt
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        token_data = schemas.TokenData(email=email)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = db.query(models.User).filter_by(email=token_data.email).first()
+    if user is None:
+        raise credentials_exception
+    return user

@@ -6,6 +6,13 @@ class BaseSchema(BaseModel):
         model_config = {'from_attributes': True}
         from_attributes = True
 
+class TokenSchema(BaseSchema):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseSchema):
+    email: EmailStr
+
 class UserSchema(BaseSchema):
     email: EmailStr
     username: str
