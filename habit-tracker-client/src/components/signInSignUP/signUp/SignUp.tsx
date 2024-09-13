@@ -6,7 +6,7 @@ export default function SignUp() {
   const [email, setEamil] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const {,setToken} = useContext(UserContext);
+  const { setToken } = useContext(UserContext)!;
   const [error, setError] = useState("");
 
   const onClickSignUp = async () => {
