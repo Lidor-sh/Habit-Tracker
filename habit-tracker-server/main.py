@@ -12,13 +12,28 @@ import dotenv
 app = FastAPI()
 dotenv.load_dotenv(".env")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to your frontend URL, e.g., ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.post("/api/users/", response_model=schemas.UserSchema)
+
+@app.post("/api/users/", response_model=schemas.TokenSchema)
 async def create_user(
     user: schemas.UserSchema, db: orm.Session = Depends(services.get_db)
 ):
     try:
-        return await services.create_user(user=user, db=db)
+        created_user = await services.create_user(user=user, db=db)
+        access_token_expires = timedelta(
+            minutes=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES"))
+        )
+        access_token = await services.create_access_token(
+            data={"sub": created_user.email}, expires_delta=access_token_expires
+        )
+        return schemas.TokenSchema(access_token=access_token, token_type="bearer")
     except HTTPException as err:
         raise err
 
