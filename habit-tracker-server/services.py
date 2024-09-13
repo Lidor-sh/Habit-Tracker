@@ -23,8 +23,10 @@ load_dotenv(".env")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def add_tables():
     return db.Base.metadata.create_all(bind=db.engine)
+
 
 def get_db():
     currDB = db.SessionLocal()
@@ -33,38 +35,46 @@ def get_db():
     finally:
         currDB.close()
 
+
 async def create_user(user: schemas.UserSchema, db: "Session") -> schemas.UserSchema:
     existing_user = db.query(models.User).filter_by(email=user.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists"
+            detail="User with this email already exists",
         )
-    
+
     hashed_password = pwd_context.hash(user.password)
-    user = models.User(email=user.email, password=hashed_password, username=user.username, image=user.image)
+    user = models.User(
+        email=user.email,
+        password=hashed_password,
+        username=user.username,
+        image=user.image,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
     return schemas.UserSchema.model_validate(user)
 
+
 async def get_user_by_email(email: str, db: "Session") -> schemas.UserSchema:
     user = db.query(models.User).filter_by(email=email).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return schemas.UserSchema.model_validate(user)
 
-async def update_user(email: str, user: schemas.UpdateUserSchema, db: "Session") -> schemas.UserSchema:
+
+async def update_user(
+    email: str, user: schemas.UpdateUserSchema, db: "Session"
+) -> schemas.UserSchema:
     existing_user = db.query(models.User).filter_by(email=email).first()
     if not existing_user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
-    
+
     if user.username:
         existing_user.username = user.username
     if user.password:
@@ -75,16 +85,17 @@ async def update_user(email: str, user: schemas.UpdateUserSchema, db: "Session")
     db.refresh(existing_user)
     return schemas.UserSchema.model_validate(existing_user)
 
+
 async def delete_user(email: str, db: "Session"):
     user = db.query(models.User).filter_by(email=email).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
+
 
 async def authenticate_user(email: str, password: str, db: "Session"):
     user = db.query(models.User).filter_by(email=email).first()
@@ -94,6 +105,7 @@ async def authenticate_user(email: str, password: str, db: "Session"):
         return False
     return user
 
+
 async def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -101,17 +113,24 @@ async def create_access_token(data: dict, expires_delta: timedelta | None = None
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM"))
+    encoded_jwt = jwt.encode(
+        to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM")
+    )
     return encoded_jwt
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: orm.Session = Depends(get_db)):
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], db: orm.Session = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")])
+        payload = jwt.decode(
+            token, os.getenv("JWT_SECRET_KEY"), algorithms=[os.getenv("JWT_ALGORITHM")]
+        )
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
