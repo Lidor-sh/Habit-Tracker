@@ -6,6 +6,7 @@ from passlib.context import CryptContext
 from pydantic import ValidationError
 from fastapi import HTTPException, status, Depends, FastAPI
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+import sqlalchemy.orm as orm
 from dotenv import load_dotenv
 from datetime import timedelta, timezone, datetime
 from jwt.exceptions import InvalidTokenError
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
 load_dotenv(".env")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def add_tables():
@@ -103,7 +104,7 @@ async def create_access_token(data: dict, expires_delta: timedelta | None = None
     encoded_jwt = jwt.encode(to_encode, os.getenv("JWT_SECRET_KEY"), algorithm=os.getenv("JWT_ALGORITHM"))
     return encoded_jwt
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: orm.Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -115,6 +116,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         if email is None:
             raise credentials_exception
         token_data = schemas.TokenData(email=email)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except InvalidTokenError:
         raise credentials_exception
     user = db.query(models.User).filter_by(email=token_data.email).first()

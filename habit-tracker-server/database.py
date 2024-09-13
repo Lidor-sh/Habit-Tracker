@@ -7,7 +7,7 @@ import os
 dotenv.load_dotenv(".env")
 
 DATABASE_URL = os.getenv("DATABASE_PUBLIC_URL") # "postgresql://habituser:habit1234@localhost:5432/habitdb"
-print(DATABASE_URL)
+#print(DATABASE_URL)
 
 
 engine = sql.create_engine(DATABASE_URL)
