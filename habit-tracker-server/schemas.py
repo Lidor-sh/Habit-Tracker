@@ -35,7 +35,7 @@ class AuthSchema(BaseSchema):
     authType: str
 
 
-class HabitSceme(BaseSchema):
+class HabitScheme(BaseSchema):
     name: str
     image: Optional[str] = None
     description: Optional[str] = None
@@ -44,5 +44,11 @@ class HabitSceme(BaseSchema):
 class UserHabitSchema(BaseSchema):
     email: EmailStr
     name: str
+    streak: int
+    completedDays: bytes
+
+class FullUserToHabitSchema(BaseSchema):
+    email: EmailStr
+    habit: HabitScheme
     streak: int
     completedDays: bytes

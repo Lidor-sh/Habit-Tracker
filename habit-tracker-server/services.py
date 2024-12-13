@@ -1,7 +1,7 @@
 import database as db
 import models
 import schemas
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from passlib.context import CryptContext
 from pydantic import ValidationError
 from fastapi import HTTPException, status, Depends, FastAPI
@@ -147,3 +147,34 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+async def get_habits(db: "Session") -> List[schemas.HabitScheme]:
+    habits = db.query(models.Habit).all()
+    if not habits:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Habits Not Found"
+        )
+    return [schemas.HabitScheme.model_validate(habit) for habit in habits]
+
+async def get_habit(habit_name: str, db: "Session") -> schemas.HabitScheme:
+    habit = db.query(models.Habit).filter_by(name = habit_name).first()
+    if not habit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Habits Not Found"
+        )
+    return schemas.HabitScheme.model_validate(habit)
+
+async def get_habits_by_user(email: str, db: "Session") -> List[schemas.FullUserToHabitSchema]:
+    user_habits = db.query(models.UserHabit).filter_by(email=email).all()
+    habits : List[schemas.FullUserToHabitSchema] = []
+    for user_habit in user_habits:
+        habit = await get_habit(habit_name=user_habit.habitName, db=db)
+        full_user_habit = schemas.FullUserToHabitSchema(
+            email= user_habit.email,
+            habit=habit,
+            streak=user_habit.streak,
+            completedDays= user_habit.completedDays
+            )
+        habits.append(full_user_habit)
+    return [schemas.FullUserToHabitSchema.model_validate(habit) for habit in habits]
+

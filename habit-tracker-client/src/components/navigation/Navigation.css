@@ -7,13 +7,6 @@
     display: flex;
 }
 
-.NavContainer{
-    /* position: relative; */
-    /* display: flex; */
-    /* margin: auto; */
-
-}
-
 .LogoContainer {
     padding-left: 1rem;
     display: flex;
@@ -63,4 +56,5 @@
 .Signin-container {
     color: inherit;
     text-decoration: none;
+    cursor: pointer;
 }

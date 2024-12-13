@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -78,7 +78,7 @@ async def login(
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or passwßord",
+                detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         access_token_expires = timedelta(
@@ -98,3 +98,17 @@ async def get_me(
 ):
     print("Main:getdurrrent")
     return current_user
+
+@app.get("/api/habits", response_model=List[schemas.HabitScheme])
+async def get_habits( db: orm.Session = Depends(services.get_db)):
+    try:
+        return await services.get_habits(db=db)
+    except HTTPException as err:
+        raise err
+    
+@app.get("/api/user/habits/", response_model=List[schemas.FullUserToHabitSchema])
+async def get_user_habits(current_user: Annotated[schemas.UserSchema, Depends(services.get_current_user)], db : orm.Session = Depends(services.get_db)):
+    try:
+        return await services.get_habits_by_user(current_user.email, db=db)
+    except Exception as err:
+        raise err

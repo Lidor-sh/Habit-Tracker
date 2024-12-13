@@ -20,7 +20,7 @@ export default function Navigation() {
             );
           })}
         </div>
-        <Link to={"/signup"} className="Signin-container">
+        <Link to={"/Login"} className="Signin-container">
           <div className="SignIn">Let's Start</div>
         </Link>
       </div>

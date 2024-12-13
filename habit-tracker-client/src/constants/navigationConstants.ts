@@ -4,3 +4,9 @@ export const navItems = [
   { name: "About Us", url: "#AboutUs" },
   { name: "Contact Us", url: "#ContactUs" },
 ];
+
+export const authNavItems = [
+  { name: "Habits", url: "#Habits" },
+  { name: "LeaderBoard", url: "#LB" },
+  { name: "Play", url: "#Play" },
+];

@@ -5,13 +5,14 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Signup from "./containers/signup/LoginPage";
 import HomePage from "./containers/homepage/Homepage";
-
+import AuthorizedHomePage from "./containers/AuthorizedHomePage/AuthorizedHomePage";
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/Signup" element={<Signup />} />
+        <Route path="/Login" element={<Signup />} />
+        <Route path="/Habbit-Tracker" element={<AuthorizedHomePage />} />
       </Routes>
     </Router>
   );

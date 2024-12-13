@@ -20,12 +20,16 @@ export default function SignUp() {
         image: "1",
       }),
     };
-    const response = await fetch("http://127.0.0.1:8000/api/users", requestOptions);
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/users",
+      requestOptions
+    );
     const data = await response.json();
     if (!response.ok) {
       setError(data.detail);
     } else {
       setToken(data.access_token);
+      setError("user created successfully");
     }
   };
 
